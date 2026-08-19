@@ -1,0 +1,23 @@
+# Virtual Environment - NEVER commit this
+.venv/
+venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Environment variables - contains SECRET API KEYS
+.env
+
+# Your personal bookmarks database - keep this local
+bookmarks.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE config
+.idea/
+.vscode/
