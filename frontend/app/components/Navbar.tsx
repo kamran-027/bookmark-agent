@@ -18,8 +18,8 @@ export const Navbar: React.FC<NavbarProps> = ({ totalCount }) => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-semibold text-slate-900 tracking-tight">
-                Bookmark Agent
+              <h1 className="text-sm font-bold text-slate-900 tracking-tight">
+                Recall
               </h1>
               <span className="inline-flex items-center gap-1.5 text-[10px] font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 px-2 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500" />
