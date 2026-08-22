@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Globe, ArrowRight, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { API_URL } from "../config";
 
 interface AddBookmarkProps {
   onBookmarkAdded: () => void;
@@ -34,7 +35,7 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
     setErrorMessage(null);
 
     // Open EventSource SSE stream to FastAPI backend
-    const streamUrl = `http://localhost:8000/api/bookmarks/stream?url=${encodeURIComponent(formattedUrl)}`;
+    const streamUrl = `${API_URL}/api/bookmarks/stream?url=${encodeURIComponent(formattedUrl)}`;
     const eventSource = new EventSource(streamUrl);
 
     eventSource.onmessage = (event) => {

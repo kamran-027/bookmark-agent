@@ -6,6 +6,7 @@ import { AddBookmark } from "./components/AddBookmark";
 import { SearchBar } from "./components/SearchBar";
 import { BookmarkCard, Bookmark } from "./components/BookmarkCard";
 import { BookmarkModal } from "./components/BookmarkModal";
+import { API_URL } from "./config";
 import { Inbox, AlertCircle, RefreshCw, Cpu, Database, Radio, Sparkles } from "lucide-react";
 
 export default function Home() {
@@ -21,11 +22,11 @@ export default function Home() {
     setLoading(true);
     setBackendError(false);
     try {
-      let endpoint = "http://localhost:8000/api/bookmarks";
+      let endpoint = `${API_URL}/api/bookmarks`;
       if (searchQuery.trim()) {
-        endpoint = `http://localhost:8000/api/bookmarks/search?q=${encodeURIComponent(searchQuery.trim())}`;
+        endpoint = `${API_URL}/api/bookmarks/search?q=${encodeURIComponent(searchQuery.trim())}`;
       } else if (selectedCategory && selectedCategory !== "All") {
-        endpoint = `http://localhost:8000/api/bookmarks?category=${encodeURIComponent(selectedCategory)}`;
+        endpoint = `${API_URL}/api/bookmarks?category=${encodeURIComponent(selectedCategory)}`;
       }
 
       const res = await fetch(endpoint);

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ExternalLink, Trash2, Copy, Check, Calendar, Tag, Maximize2, ChevronDown, ChevronUp } from "lucide-react";
+import { API_URL } from "../config";
 
 export interface Bookmark {
   id: number;
@@ -50,7 +51,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
     setDeleting(true);
 
     try {
-      const res = await fetch(`http://localhost:8000/api/bookmarks/${bookmark.id}`, {
+      const res = await fetch(`${API_URL}/api/bookmarks/${bookmark.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
