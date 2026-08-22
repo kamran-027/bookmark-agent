@@ -80,31 +80,31 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
 
   const gradientLine = CATEGORY_GRADIENTS[bookmark.category] || CATEGORY_GRADIENTS.Other;
   const pillStyle = CATEGORY_PILLS[bookmark.category] || CATEGORY_PILLS.Other;
-  const isLongSummary = (bookmark.summary || "").length > 160;
+  const isLongSummary = (bookmark.summary || "").length > 150;
 
   return (
-    <div className="group relative bg-white/85 backdrop-blur-xl border border-slate-200/80 hover:border-slate-300/90 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_16px_32px_-8px_rgba(0,0,0,0.08)] hover:-translate-y-1 overflow-hidden">
+    <div className="group relative bg-white/85 backdrop-blur-xl border border-slate-200/80 hover:border-slate-300/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_16px_32px_-8px_rgba(0,0,0,0.08)] hover:-translate-y-1 overflow-hidden">
       {/* Top Hairline Gradient Accent */}
       <div className={`absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r ${gradientLine} opacity-80 group-hover:opacity-100 transition-opacity`} />
 
       <div>
         {/* Top Meta Bar */}
-        <div className="flex items-center justify-between gap-2 mb-3 pt-1">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 mb-2.5 pt-1">
+          <div className="flex items-center gap-1.5 min-w-0">
             <img
               src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
               alt=""
-              className="w-4 h-4 rounded-sm"
+              className="w-4 h-4 rounded-sm shrink-0"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = "none";
               }}
             />
-            <span className="text-[11px] font-medium text-slate-500 truncate max-w-[140px]">
+            <span className="text-[11px] font-medium text-slate-500 truncate max-w-[120px] sm:max-w-[150px]">
               {hostname}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 shrink-0">
             <span className={`text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full border ${pillStyle} shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]`}>
               {bookmark.category}
             </span>
@@ -112,7 +112,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
             {onSelect && (
               <button
                 onClick={() => onSelect(bookmark)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer active:scale-95"
                 title="Open Reader View"
               >
                 <Maximize2 className="w-3.5 h-3.5" />
@@ -122,22 +122,22 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors text-sm leading-snug mb-2">
+        <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors text-sm leading-snug mb-2 break-words">
           <a
             href={bookmark.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:underline flex items-start justify-between gap-2"
+            className="hover:underline flex items-start justify-between gap-1.5"
           >
-            <span>{bookmark.title}</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+            <span className="line-clamp-2">{bookmark.title}</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400 opacity-60 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
           </a>
         </h3>
 
         {/* AI Summary with Inline Expand Toggle */}
-        <div className="mb-4">
+        <div className="mb-3.5">
           <p
-            className={`text-xs text-slate-600 leading-relaxed font-normal transition-all ${
+            className={`text-xs text-slate-600 leading-relaxed font-normal transition-all break-words ${
               !isExpanded ? "line-clamp-3" : ""
             }`}
           >
@@ -147,7 +147,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
           {isLongSummary && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="inline-flex items-center gap-0.5 text-[11px] text-indigo-600 hover:text-indigo-700 font-medium mt-1.5 cursor-pointer"
+              className="inline-flex items-center gap-0.5 text-[11px] text-indigo-600 hover:text-indigo-700 font-medium mt-1.5 cursor-pointer active:scale-95"
             >
               <span>{isExpanded ? "Show less" : "Read full summary"}</span>
               {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -159,8 +159,8 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
       <div>
         {/* Keyword Tags */}
         {bookmark.tags && bookmark.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {bookmark.tags.map((tag, idx) => (
+          <div className="flex flex-wrap gap-1.5 mb-3.5">
+            {bookmark.tags.slice(0, 4).map((tag, idx) => (
               <span
                 key={idx}
                 className="inline-flex items-center gap-0.5 text-[10px] bg-slate-50/90 text-slate-600 border border-slate-200/70 px-2 py-0.5 rounded-md font-normal shadow-[0_1px_1px_rgba(0,0,0,0.02)]"
@@ -173,16 +173,16 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
         )}
 
         {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-slate-400">
-          <div className="flex items-center gap-1 text-[11px] text-slate-400 font-normal">
-            <Calendar className="w-3 h-3 text-slate-400" />
-            <span>{bookmark.created_at}</span>
+        <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-slate-400">
+          <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-400 font-normal">
+            <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className="truncate">{bookmark.created_at}</span>
           </div>
 
           <div className="flex items-center gap-1">
             <button
               onClick={handleCopy}
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer active:scale-95"
               title="Copy URL"
             >
               {copied ? (
@@ -195,7 +195,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onDelete, 
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer active:scale-95"
               title="Delete Bookmark"
             >
               <Trash2 className="w-3.5 h-3.5" />

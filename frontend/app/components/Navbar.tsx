@@ -9,41 +9,41 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ totalCount }) => {
   return (
-    <header className="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-slate-200/70 px-6 py-3.5 shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all">
-      <div className="max-w-5xl mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/70 px-4 sm:px-6 py-3 shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all">
+      <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
         {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 text-white flex items-center justify-center shadow-md shadow-slate-900/10 border border-slate-700/40">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 text-white flex items-center justify-center shadow-md shadow-slate-900/10 border border-slate-700/40 shrink-0">
             <Bookmark className="w-4 h-4 text-indigo-300" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-slate-900 tracking-tight">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="text-sm font-bold text-slate-900 tracking-tight truncate">
                 Recall
               </h1>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 px-2 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500" />
-                Live Agent
+                Live
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 font-normal">
-              Autonomous URL Ingestion & Synthesis
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-normal hidden xs:block sm:block truncate">
+              Autonomous AI Knowledge Engine
             </p>
           </div>
         </div>
 
         {/* Right side stats & links */}
-        <div className="flex items-center gap-2.5">
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100/70 border border-slate-200/80 px-3 py-1 rounded-full font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>{totalCount} {totalCount === 1 ? "saved item" : "saved items"}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 text-[11px] sm:text-xs text-slate-700 bg-slate-100/80 border border-slate-200/80 px-2.5 sm:px-3 py-1 rounded-full font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-600 shrink-0" />
+            <span>{totalCount} <span className="hidden sm:inline">{totalCount === 1 ? "saved item" : "saved items"}</span></span>
           </div>
 
           <a
             href="https://github.com/kamran-027/bookmark-agent"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all border border-transparent hover:border-slate-200"
+            className="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all border border-transparent hover:border-slate-200 active:scale-95"
             title="View Source on GitHub"
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
