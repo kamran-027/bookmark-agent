@@ -39,7 +39,7 @@ summarizer_llm = ChatGoogleGenerativeAI(
 ).with_structured_output(BookmarkSchema)
 
 
-async def process_bookmark_stream(url: str) -> AsyncGenerator[str, None]:
+async def process_bookmark_stream(url: str, user_id: str = "default_guest") -> AsyncGenerator[str, None]:
     """
     Async generator that fetches, analyzes, summarizes, and saves a bookmark,
     emitting Server-Sent Events (SSE) progress logs to the caller.
@@ -66,18 +66,19 @@ async def process_bookmark_stream(url: str) -> AsyncGenerator[str, None]:
         raw_text = soup.get_text(separator="\n", strip=True)
         truncated_text = raw_text[:3500]
 
-        yield json.dumps({"event": "status", "data": "Analyzing content & generating summary with Gemini 3.5 Flash..."})
+        yield json.dumps({"event": "status", "data": "Analyzing content & generating summary with Gemini AI..."})
         await asyncio.sleep(0.2)
 
         # Step 4: Run Gemini Structured Output (in threadpool to keep async loop non-blocking)
         prompt = f"Analyze this web page content and provide a structured summary:\n\nURL: {url}\n\nContent:\n{truncated_text}"
         result: BookmarkSchema = await asyncio.to_thread(summarizer_llm.invoke, prompt)
 
-        yield json.dumps({"event": "status", "data": "Saving bookmark to SQLite database..."})
+        yield json.dumps({"event": "status", "data": "Saving bookmark to persistent database..."})
         await asyncio.sleep(0.2)
 
-        # Step 5: Save to SQLite database
+        # Step 5: Save to user-scoped database
         saved_record = add_bookmark(
+            user_id=user_id,
             url=url,
             title=result.title,
             summary=result.summary,

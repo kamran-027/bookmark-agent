@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Globe, ArrowRight, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { API_URL } from "../config";
 
@@ -15,6 +16,7 @@ const DEMO_PRESETS = [
 ];
 
 export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => {
+  const { data: session } = useSession();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusLog, setStatusLog] = useState<string[]>([]);
@@ -34,8 +36,13 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
     setStatusLog([]);
     setErrorMessage(null);
 
-    // Open EventSource SSE stream to FastAPI backend
-    const streamUrl = `${API_URL}/api/bookmarks/stream?url=${encodeURIComponent(formattedUrl)}`;
+    // Open EventSource SSE stream to FastAPI backend with optional auth token
+    const token = (session as any)?.accessToken?.userId || (session?.user as any)?.id || "";
+    let streamUrl = `${API_URL}/api/bookmarks/stream?url=${encodeURIComponent(formattedUrl)}`;
+    if (token) {
+      streamUrl += `&token=${encodeURIComponent(token)}`;
+    }
+
     const eventSource = new EventSource(streamUrl);
 
     eventSource.onmessage = (event) => {
@@ -61,136 +68,105 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
     };
 
     eventSource.onerror = (err) => {
-      console.error("SSE connection error:", err);
-      setErrorMessage("Could not connect to FastAPI server. Please check backend connection.");
+      console.error("EventSource failed:", err);
+      setErrorMessage("Lost connection to server while analyzing URL.");
       eventSource.close();
       setLoading(false);
     };
   };
 
   return (
-    <div className="relative mb-8 sm:mb-12">
-      {/* Ambient Spotlight Glow behind input */}
-      <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-sky-500/20 rounded-3xl blur-xl opacity-70 transition-all pointer-events-none" />
-
-      {/* Main Command Bar Container */}
-      <div className="relative bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] focus-within:shadow-[0_8px_30px_rgb(99,102,241,0.12)] focus-within:border-indigo-400/80 transition-all">
+    <div className="mb-6 sm:mb-8 max-w-2xl mx-auto">
+      <div className="bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all">
+        {/* Input Bar */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSubmit();
           }}
-          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2"
+          className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5"
         >
-          <div className="flex items-center gap-2 flex-1 pl-2 sm:pl-3">
-            <Globe className="w-4 h-4 text-indigo-500 shrink-0" />
+          <div className="relative flex-1 w-full">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Globe className="w-4 h-4" />
+            </div>
             <input
-              type="url"
-              required
-              placeholder="Paste any article or blog URL..."
+              type="text"
+              placeholder="Paste any article or website URL..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               disabled={loading}
-              className="w-full bg-transparent border-0 px-1 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 disabled:opacity-60 font-medium"
+              className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50/90 border border-slate-200/80 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all disabled:opacity-50"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading || !url.trim()}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-gradient-to-b from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 disabled:from-slate-100 disabled:to-slate-100 disabled:text-slate-400 text-white text-xs font-medium px-4 py-2.5 sm:py-2.5 rounded-xl transition-all shadow-md shadow-slate-900/10 active:scale-98 cursor-pointer shrink-0 min-h-[40px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-slate-900 to-slate-950 hover:from-slate-800 hover:to-slate-900 text-white px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all shadow-md shadow-slate-900/10 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
           >
             {loading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Processing...</span>
+                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                <span>Synthesizing...</span>
               </>
             ) : (
               <>
-                <span>Save with AI</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Ingest & Save</span>
+                <ArrowRight className="w-4 h-4 text-slate-400" />
               </>
             )}
           </button>
         </form>
-      </div>
 
-      {/* Preset demo links with smooth touch scroll */}
-      <div className="flex items-center gap-2 mt-3 px-1 text-xs text-slate-500 overflow-x-auto no-scrollbar py-0.5">
-        <span className="text-[11px] font-medium text-slate-400 shrink-0 flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-amber-500" /> Quick test:
-        </span>
-        {DEMO_PRESETS.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            onClick={() => {
-              setUrl(preset.url);
-              handleSubmit(preset.url);
-            }}
-            disabled={loading}
-            className="text-[11px] text-slate-600 hover:text-slate-900 bg-white/80 hover:bg-white border border-slate-200/80 hover:border-slate-300 px-2.5 py-1 rounded-lg transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer shrink-0 whitespace-nowrap active:scale-95"
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Real-Time Streaming Progress Timeline */}
-      {statusLog.length > 0 && (
-        <div className="mt-4 p-3.5 sm:p-4 bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
-            <div className="flex items-center gap-2">
-              {loading ? (
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
-                </div>
-              ) : (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              )}
-              <span className="text-xs font-semibold text-slate-800 tracking-tight">
-                {loading ? "Agent Ingestion Active" : "Ingestion Complete"}
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-              {statusLog.length} steps
+        {/* Quick Test Presets */}
+        {!loading && (
+          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+            <span className="font-medium text-slate-400 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-indigo-500" /> Quick test:
             </span>
+            {DEMO_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => handleSubmit(preset.url)}
+                className="px-2 py-0.5 rounded-lg bg-slate-100/70 hover:bg-slate-200/80 text-slate-600 font-medium transition-colors cursor-pointer active:scale-95 text-[10px] sm:text-[11px]"
+              >
+                {preset.label}
+              </button>
+            ))}
           </div>
+        )}
 
-          <div className="space-y-2 relative pl-2">
-            <div className="absolute left-3.5 top-1 bottom-1 w-0.5 bg-slate-100" />
-            {statusLog.map((log, idx) => {
-              const isLast = idx === statusLog.length - 1;
-              return (
-                <div key={idx} className="flex items-start gap-2.5 sm:gap-3 text-xs relative z-10 break-words">
-                  <div className="mt-0.5 bg-white rounded-full shrink-0">
-                    {!isLast || !loading ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                    ) : (
-                      <Loader2 className="w-3.5 h-3.5 text-indigo-600 animate-spin shrink-0" />
-                    )}
-                  </div>
-                  <span className={`min-w-0 ${isLast && loading ? "text-slate-900 font-medium" : "text-slate-500"}`}>
-                    {log}
-                  </span>
+        {/* SSE Live Progress Stream Log */}
+        {loading && statusLog.length > 0 && (
+          <div className="mt-3.5 pt-3.5 border-t border-slate-100/80 space-y-1.5 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+              <span>Agent Execution Pipeline</span>
+              <span className="animate-pulse text-indigo-600 font-semibold">Active</span>
+            </div>
+            <div className="space-y-1">
+              {statusLog.map((log, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 text-xs text-slate-600 animate-in fade-in slide-in-from-left-1 duration-150"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <span>{log}</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Error Card */}
-      {errorMessage && (
-        <div className="mt-4 p-3.5 bg-rose-50/90 border border-rose-200/80 text-rose-700 text-xs rounded-xl flex items-start gap-2.5 shadow-sm">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="font-semibold text-rose-800">Failed to process URL</p>
-            <p className="text-rose-600 mt-0.5 break-words">{errorMessage}</p>
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="mt-3 p-3 bg-rose-50/90 border border-rose-200/80 rounded-xl flex items-start gap-2 text-xs text-rose-700 animate-in fade-in duration-150">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <p>{errorMessage}</p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

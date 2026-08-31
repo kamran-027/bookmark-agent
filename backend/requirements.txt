@@ -8,3 +8,6 @@ python-dotenv
 httpx
 beautifulsoup4
 pydantic
+pyjwt
+cryptography
+psycopg2-binary

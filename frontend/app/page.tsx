@@ -1,21 +1,34 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { Navbar } from "./components/Navbar";
 import { AddBookmark } from "./components/AddBookmark";
 import { SearchBar } from "./components/SearchBar";
 import { BookmarkCard, Bookmark } from "./components/BookmarkCard";
 import { BookmarkModal } from "./components/BookmarkModal";
 import { API_URL } from "./config";
-import { Inbox, AlertCircle, RefreshCw, Cpu, Database, Radio, Sparkles } from "lucide-react";
+import { Inbox, AlertCircle, RefreshCw, Cpu, Database, Radio, Sparkles, ShieldCheck } from "lucide-react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
+
+  // Sync user with backend when authenticated
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      fetch(`${API_URL}/api/user/sync`, {
+        headers: {
+          Authorization: `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`,
+        },
+      }).catch((err) => console.error("User sync error:", err));
+    }
+  }, [session, status]);
 
   // Fetch bookmarks from FastAPI backend
   const fetchBookmarks = useCallback(async () => {
@@ -29,7 +42,12 @@ export default function Home() {
         endpoint = `${API_URL}/api/bookmarks?category=${encodeURIComponent(selectedCategory)}`;
       }
 
-      const res = await fetch(endpoint);
+      const headers: Record<string, string> = {};
+      if (session?.user) {
+        headers["Authorization"] = `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`;
+      }
+
+      const res = await fetch(endpoint, { headers });
       if (res.ok) {
         const data = await res.json();
         setBookmarks(data);
@@ -42,7 +60,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, session]);
 
   useEffect(() => {
     fetchBookmarks();
@@ -90,14 +108,14 @@ export default function Home() {
         <div className="mb-8 sm:mb-10 text-center max-w-xl mx-auto px-2">
           <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-medium bg-white/80 border border-slate-200/90 text-slate-700 px-2.5 sm:px-3 py-1 rounded-full shadow-sm mb-2.5 sm:mb-3">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
-            <span>Autonomous Web Curation & Synthesis</span>
+            <span>Autonomous Web Curation & Persistent Knowledge</span>
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2 sm:mb-2.5">
             Your AI Knowledge Base
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-            Paste any link. The LangGraph agent extracts, synthesizes, and catalogs it automatically in real time.
+            Paste any link. The AI agent extracts, synthesizes, and catalogs it automatically with user-scoped cloud persistence.
           </p>
 
           {/* Architecture Highlights Strip */}
@@ -107,11 +125,15 @@ export default function Home() {
             </span>
             <span className="hidden xs:inline">•</span>
             <span className="flex items-center gap-1">
-              <Cpu className="w-3 h-3 text-purple-500 shrink-0" /> Gemini 3.5 Flash
+              <Cpu className="w-3 h-3 text-purple-500 shrink-0" /> Gemini AI Engine
             </span>
             <span className="hidden xs:inline">•</span>
             <span className="flex items-center gap-1">
-              <Database className="w-3 h-3 text-emerald-500 shrink-0" /> SQLite Embedded
+              <Database className="w-3 h-3 text-emerald-500 shrink-0" /> Cloud PostgreSQL
+            </span>
+            <span className="hidden xs:inline">•</span>
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-blue-500 shrink-0" /> SSO Auth
             </span>
           </div>
         </div>
