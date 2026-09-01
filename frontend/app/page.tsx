@@ -7,8 +7,22 @@ import { AddBookmark } from "./components/AddBookmark";
 import { SearchBar } from "./components/SearchBar";
 import { BookmarkCard, Bookmark } from "./components/BookmarkCard";
 import { BookmarkModal } from "./components/BookmarkModal";
+import { LoginModal } from "./components/LoginModal";
+import { CURATED_DEMO_BOOKMARKS } from "./data/demoBookmarks";
 import { API_URL } from "./config";
-import { Inbox, AlertCircle, RefreshCw, Cpu, Database, Radio, Sparkles, ShieldCheck } from "lucide-react";
+import {
+  Inbox,
+  AlertCircle,
+  RefreshCw,
+  Cpu,
+  Database,
+  Radio,
+  Sparkles,
+  ShieldCheck,
+  Lock,
+  ArrowRight,
+  UserCheck
+} from "lucide-react";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -18,22 +32,26 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<Bookmark | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const isAuthenticated = status === "authenticated";
 
   // Sync user with backend when authenticated
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
+    if (isAuthenticated && session?.user) {
       fetch(`${API_URL}/api/user/sync`, {
         headers: {
           Authorization: `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`,
         },
       }).catch((err) => console.error("User sync error:", err));
     }
-  }, [session, status]);
+  }, [session, isAuthenticated]);
 
   // Fetch bookmarks from FastAPI backend
   const fetchBookmarks = useCallback(async () => {
     setLoading(true);
     setBackendError(false);
+
     try {
       let endpoint = `${API_URL}/api/bookmarks`;
       if (searchQuery.trim()) {
@@ -43,30 +61,62 @@ export default function Home() {
       }
 
       const headers: Record<string, string> = {};
-      if (session?.user) {
+      if (isAuthenticated && session?.user) {
         headers["Authorization"] = `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`;
       }
 
       const res = await fetch(endpoint, { headers });
       if (res.ok) {
-        const data = await res.json();
-        setBookmarks(data);
+        const data: Bookmark[] = await res.json();
+
+        // If authenticated, show user's own data
+        if (isAuthenticated) {
+          setBookmarks(data);
+        } else {
+          // If guest, show user bookmarks or fallback to curated demo bookmarks
+          if (data && data.length > 0) {
+            setBookmarks(data);
+          } else {
+            // Filter curated demo bookmarks by search and category
+            let filteredDemo = CURATED_DEMO_BOOKMARKS;
+            if (selectedCategory !== "All") {
+              filteredDemo = filteredDemo.filter(
+                (b) => b.category.toLowerCase() === selectedCategory.toLowerCase()
+              );
+            }
+            if (searchQuery.trim()) {
+              const q = searchQuery.toLowerCase();
+              filteredDemo = filteredDemo.filter(
+                (b) =>
+                  b.title.toLowerCase().includes(q) ||
+                  b.summary.toLowerCase().includes(q) ||
+                  b.tags.some((t) => t.toLowerCase().includes(q))
+              );
+            }
+            setBookmarks(filteredDemo);
+          }
+        }
       } else {
         setBackendError(true);
+        if (!isAuthenticated) setBookmarks(CURATED_DEMO_BOOKMARKS);
       }
     } catch (err) {
-      console.error("Error fetching bookmarks:", err);
       setBackendError(true);
+      if (!isAuthenticated) setBookmarks(CURATED_DEMO_BOOKMARKS);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, session]);
+  }, [searchQuery, selectedCategory, session, isAuthenticated]);
 
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
   const handleDelete = (id: number) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     setBookmarks((prev) => prev.filter((b) => b.id !== id));
   };
 
@@ -82,6 +132,33 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        {/* Guest Mode Conversion Banner */}
+        {!isAuthenticated && (
+          <div className="mb-6 p-3.5 sm:p-4 bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-white border border-indigo-100/90 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_2px_12px_rgba(99,102,241,0.06)] backdrop-blur-md">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                  <span>Interactive Sandbox Mode</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">Demo</span>
+                </p>
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                  Try ingesting any link below. Sign in with 1 click to unlock private, persistent cloud storage.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+            >
+              <span>Sign In to Save</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Backend Offline Alert */}
         {backendError && (
           <div className="mb-6 sm:mb-8 p-3.5 sm:p-4 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-800 shadow-sm backdrop-blur-md">
@@ -139,7 +216,10 @@ export default function Home() {
         </div>
 
         {/* Add Bookmark Section */}
-        <AddBookmark onBookmarkAdded={fetchBookmarks} />
+        <AddBookmark
+          onBookmarkAdded={fetchBookmarks}
+          onRequireAuth={() => setShowLoginModal(true)}
+        />
 
         {/* Search & Filter Toolbar */}
         <SearchBar
@@ -158,8 +238,13 @@ export default function Home() {
         ) : bookmarks.length > 0 ? (
           <div>
             <div className="flex items-center justify-between mb-3.5 sm:mb-4 px-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                {selectedCategory === "All" ? "All Bookmarks" : `${selectedCategory} Collection`}
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                {selectedCategory === "All" ? "Knowledge Collection" : `${selectedCategory} Collection`}
+                {!isAuthenticated && (
+                  <span className="text-[10px] bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded-full lowercase">
+                    demo preview
+                  </span>
+                )}
               </span>
               <span className="text-xs text-slate-400 font-mono">
                 {bookmarks.length} {bookmarks.length === 1 ? "entry" : "entries"}
@@ -202,6 +287,12 @@ export default function Home() {
         isOpen={!!selectedBookmark}
         onClose={() => setSelectedBookmark(null)}
         onDelete={handleDelete}
+      />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </div>
   );

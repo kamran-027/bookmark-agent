@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
-import { X, Sparkles, LogIn, ArrowRight, ShieldCheck } from "lucide-react";
+import { X, Sparkles, ArrowRight, ShieldCheck, Mail } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 relative overflow-hidden text-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow accent */}
+        {/* Ambient Glow Accent */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -64,7 +64,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* SSO Buttons */}
-        <div className="space-y-2.5 mb-6">
+        <div className="space-y-2.5 mb-5">
           <button
             onClick={() => handleOAuth("google")}
             disabled={loading}
@@ -103,33 +103,34 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="relative flex items-center justify-center mb-6">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">
-            or quick demo account
+        {/* Perfectly Centered Divider */}
+        <div className="flex items-center gap-3 my-5">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+            or continue with email
           </span>
+          <div className="h-px flex-1 bg-slate-200" />
         </div>
 
-        {/* Quick Demo Form */}
+        {/* Email / Demo Account Form */}
         <form onSubmit={handleDemoLogin} className="space-y-3">
           <div>
             <input
               type="email"
               required
-              placeholder="Your email address"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
+              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
             />
           </div>
           <div>
             <input
               type="text"
-              placeholder="Your display name (optional)"
+              placeholder="Display Name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
+              className="w-full px-3.5 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder:text-slate-400"
             />
           </div>
           <button
@@ -137,12 +138,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             disabled={loading || !email}
             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
-            {loading ? "Authenticating..." : "Sign In with Demo Account"}
+            {loading ? "Authenticating..." : "Sign In with Email"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+        <div className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
           <span>Encrypted sessions & private cloud storage</span>
         </div>

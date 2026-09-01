@@ -2,11 +2,12 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Globe, ArrowRight, Loader2, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { Globe, ArrowRight, Loader2, CheckCircle2, AlertCircle, Sparkles, LogIn } from "lucide-react";
 import { API_URL } from "../config";
 
 interface AddBookmarkProps {
   onBookmarkAdded: () => void;
+  onRequireAuth?: () => void;
 }
 
 const DEMO_PRESETS = [
@@ -15,12 +16,15 @@ const DEMO_PRESETS = [
   { label: "Hacker News", url: "https://news.ycombinator.com" },
 ];
 
-export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => {
-  const { data: session } = useSession();
+export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded, onRequireAuth }) => {
+  const { data: session, status } = useSession();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusLog, setStatusLog] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [justSynthesized, setJustSynthesized] = useState(false);
+
+  const isAuthenticated = status === "authenticated";
 
   const handleSubmit = (targetUrlString?: string) => {
     const inputUrl = (targetUrlString || url).trim();
@@ -35,6 +39,7 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
     setLoading(true);
     setStatusLog([]);
     setErrorMessage(null);
+    setJustSynthesized(false);
 
     // Open EventSource SSE stream to FastAPI backend with optional auth token
     const token = (session as any)?.accessToken?.userId || (session?.user as any)?.id || "";
@@ -57,6 +62,9 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
           onBookmarkAdded();
           eventSource.close();
           setLoading(false);
+          if (!isAuthenticated) {
+            setJustSynthesized(true);
+          }
         } else if (payload.event === "error") {
           setErrorMessage(payload.data);
           eventSource.close();
@@ -135,6 +143,25 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded }) => 
                 {preset.label}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Guest Claim & Save Success Banner */}
+        {justSynthesized && !isAuthenticated && (
+          <div className="mt-3.5 p-3 bg-emerald-50/90 border border-emerald-200 rounded-xl flex items-center justify-between gap-3 text-xs text-emerald-900 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Bookmark synthesized! Sign in to claim and save permanently.</span>
+            </div>
+            {onRequireAuth && (
+              <button
+                onClick={onRequireAuth}
+                className="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded-lg font-medium text-[11px] transition-all shrink-0 cursor-pointer shadow-sm"
+              >
+                <LogIn className="w-3 h-3" />
+                <span>Claim Bookmark</span>
+              </button>
+            )}
           </div>
         )}
 
