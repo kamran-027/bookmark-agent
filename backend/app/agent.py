@@ -15,9 +15,7 @@ from .database import add_bookmark
 # Load env variables
 load_dotenv()
 
-api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-
-# --- MONKEYPATCH for thought_signature on Gemini 3+ models ---
+# --- MONKEYPATCH for thought_signature on Gemini models ---
 orig_parse_chat_history = chat_models._parse_chat_history
 
 def patched_parse_chat_history(*args, **kwargs):
@@ -31,12 +29,18 @@ def patched_parse_chat_history(*args, **kwargs):
 chat_models._parse_chat_history = patched_parse_chat_history
 # -------------------------------------------------------------
 
-# Initialize structured summarizer model
-summarizer_llm = ChatGoogleGenerativeAI(
-    model="gemini-3.5-flash",
-    temperature=0.3,
-    google_api_key=api_key,
-).with_structured_output(BookmarkSchema)
+def get_summarizer_llm():
+    """Lazy-initializes the Gemini model with structured output."""
+    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+    if not api_key or not api_key.strip():
+        raise ValueError("GEMINI_API_KEY is not set in backend/.env. Please add your Gemini API Key.")
+    
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    return ChatGoogleGenerativeAI(
+        model=gemini_model,
+        temperature=0.3,
+        google_api_key=api_key.strip(),
+    ).with_structured_output(BookmarkSchema)
 
 
 async def process_bookmark_stream(url: str, user_id: str = "default_guest") -> AsyncGenerator[str, None]:
@@ -45,6 +49,15 @@ async def process_bookmark_stream(url: str, user_id: str = "default_guest") -> A
     emitting Server-Sent Events (SSE) progress logs to the caller.
     """
     try:
+        # Check API key before proceeding
+        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        if not api_key or not api_key.strip():
+            yield json.dumps({
+                "event": "error",
+                "data": "GEMINI_API_KEY is missing in backend/.env. Please add your Google AI Studio key."
+            })
+            return
+
         # Step 1: Emit initial status event
         yield json.dumps({"event": "status", "data": f"Connecting to {url}..."})
         await asyncio.sleep(0.2)
@@ -70,8 +83,9 @@ async def process_bookmark_stream(url: str, user_id: str = "default_guest") -> A
         await asyncio.sleep(0.2)
 
         # Step 4: Run Gemini Structured Output (in threadpool to keep async loop non-blocking)
+        llm = get_summarizer_llm()
         prompt = f"Analyze this web page content and provide a structured summary:\n\nURL: {url}\n\nContent:\n{truncated_text}"
-        result: BookmarkSchema = await asyncio.to_thread(summarizer_llm.invoke, prompt)
+        result: BookmarkSchema = await asyncio.to_thread(llm.invoke, prompt)
 
         yield json.dumps({"event": "status", "data": "Saving bookmark to persistent database..."})
         await asyncio.sleep(0.2)

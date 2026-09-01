@@ -38,10 +38,11 @@ export default function Home() {
 
   // Sync user with backend when authenticated
   useEffect(() => {
-    if (isAuthenticated && session?.user) {
+    const userId = session?.user?.email || (session?.user as any)?.id || (session as any)?.accessToken?.userId || "";
+    if (isAuthenticated && userId) {
       fetch(`${API_URL}/api/user/sync`, {
         headers: {
-          Authorization: `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`,
+          Authorization: `Bearer ${userId}`,
         },
       }).catch((err) => console.error("User sync error:", err));
     }
@@ -49,6 +50,9 @@ export default function Home() {
 
   // Fetch bookmarks from FastAPI backend
   const fetchBookmarks = useCallback(async () => {
+    // Wait until NextAuth finishes loading the session from storage/cookies
+    if (status === "loading") return;
+
     setLoading(true);
     setBackendError(false);
 
@@ -61,17 +65,18 @@ export default function Home() {
       }
 
       const headers: Record<string, string> = {};
-      if (isAuthenticated && session?.user) {
-        headers["Authorization"] = `Bearer ${(session as any)?.accessToken?.userId || (session?.user as any)?.id || ""}`;
+      const userId = session?.user?.email || (session?.user as any)?.id || "";
+      if (status === "authenticated" && userId) {
+        headers["Authorization"] = `Bearer ${userId}`;
       }
 
       const res = await fetch(endpoint, { headers });
       if (res.ok) {
         const data: Bookmark[] = await res.json();
 
-        // If authenticated, show user's own data
-        if (isAuthenticated) {
-          setBookmarks(data);
+        // If authenticated, show user's own data (even if empty)
+        if (status === "authenticated") {
+          setBookmarks(data || []);
         } else {
           // If guest, show user bookmarks or fallback to curated demo bookmarks
           if (data && data.length > 0) {
@@ -98,15 +103,15 @@ export default function Home() {
         }
       } else {
         setBackendError(true);
-        if (!isAuthenticated) setBookmarks(CURATED_DEMO_BOOKMARKS);
+        if (status !== "authenticated") setBookmarks(CURATED_DEMO_BOOKMARKS);
       }
     } catch (err) {
       setBackendError(true);
-      if (!isAuthenticated) setBookmarks(CURATED_DEMO_BOOKMARKS);
+      if (status !== "authenticated") setBookmarks(CURATED_DEMO_BOOKMARKS);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, session, isAuthenticated]);
+  }, [searchQuery, selectedCategory, session, status]);
 
   useEffect(() => {
     fetchBookmarks();

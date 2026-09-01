@@ -42,7 +42,7 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded, onReq
     setJustSynthesized(false);
 
     // Open EventSource SSE stream to FastAPI backend with optional auth token
-    const token = (session as any)?.accessToken?.userId || (session?.user as any)?.id || "";
+    const token = session?.user?.email || (session?.user as any)?.id || (session as any)?.accessToken?.userId || "";
     let streamUrl = `${API_URL}/api/bookmarks/stream?url=${encodeURIComponent(formattedUrl)}`;
     if (token) {
       streamUrl += `&token=${encodeURIComponent(token)}`;
