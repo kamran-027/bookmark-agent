@@ -132,33 +132,6 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        {/* Guest Mode Conversion Banner */}
-        {!isAuthenticated && (
-          <div className="mb-6 p-3.5 sm:p-4 bg-gradient-to-r from-indigo-50/90 via-purple-50/80 to-white border border-indigo-100/90 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_2px_12px_rgba(99,102,241,0.06)] backdrop-blur-md">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                  <span>Interactive Sandbox Mode</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">Demo</span>
-                </p>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-                  Try ingesting any link below. Sign in with 1 click to unlock private, persistent cloud storage.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
-            >
-              <span>Sign In to Save</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
         {/* Backend Offline Alert */}
         {backendError && (
           <div className="mb-6 sm:mb-8 p-3.5 sm:p-4 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-800 shadow-sm backdrop-blur-md">
