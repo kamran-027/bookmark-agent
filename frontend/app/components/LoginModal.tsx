@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
-import { X, Sparkles, ArrowRight, ShieldCheck, Mail } from "lucide-react";
+import { X, Sparkles, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -13,23 +13,52 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleOAuth = async (provider: string) => {
     setLoading(true);
-    await signIn(provider, { callbackUrl: window.location.href });
+    setAuthError(null);
+    try {
+      const res = await signIn(provider, { callbackUrl: window.location.href, redirect: false });
+      if (res?.error) {
+        setAuthError(
+          `${provider.toUpperCase()} OAuth is not configured in .env.local yet. Please use "Sign In with Email" below or add your ${provider.toUpperCase()} Client ID.`
+        );
+        setLoading(false);
+      } else if (res?.url) {
+        window.location.href = res.url;
+      }
+    } catch (err: any) {
+      setAuthError(
+        `${provider.toUpperCase()} OAuth credentials not found. Please use the email sign-in below for instant access.`
+      );
+      setLoading(false);
+    }
   };
 
   const handleDemoLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await signIn("demo-login", {
-      email: email.trim(),
-      name: name.trim() || email.split("@")[0],
-      callbackUrl: window.location.href,
-    });
+    setAuthError(null);
+    try {
+      const res = await signIn("demo-login", {
+        email: email.trim(),
+        name: name.trim() || email.split("@")[0],
+        callbackUrl: window.location.href,
+        redirect: false,
+      });
+      if (res?.url) {
+        window.location.href = res.url;
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      setAuthError("Failed to authenticate demo account. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,6 +91,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             Access your private, persistent AI bookmarks across devices.
           </p>
         </div>
+
+        {/* Error Alert */}
+        {authError && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-xs text-amber-800 animate-in fade-in duration-150">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <p>{authError}</p>
+          </div>
+        )}
 
         {/* SSO Buttons */}
         <div className="space-y-2.5 mb-5">
