@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Navbar } from "./components/Navbar";
 import { AddBookmark } from "./components/AddBookmark";
 import { SearchBar } from "./components/SearchBar";
@@ -21,7 +21,8 @@ import {
   ShieldCheck,
   Lock,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  LogIn
 } from "lucide-react";
 
 export default function Home() {
@@ -192,6 +193,46 @@ export default function Home() {
             </span>
           </div>
         </div>
+
+        {/* User Scope / Library State Notification Banner */}
+        {isAuthenticated ? (
+          <div className="mb-6 p-3 sm:p-3.5 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-emerald-900 shadow-sm backdrop-blur-md animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span>
+                Personal Library Active: <strong className="font-semibold">{session?.user?.email || session?.user?.name}</strong>
+              </span>
+              <span className="hidden sm:inline text-emerald-600/70 font-mono">• Supabase Cloud Storage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] bg-emerald-100/90 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">
+                Private Bookmarks
+              </span>
+              <button
+                onClick={() => signOut({ callbackUrl: window.location.href })}
+                className="text-emerald-700 hover:text-emerald-900 font-medium underline underline-offset-2 ml-1 cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 p-3 sm:p-3.5 bg-slate-100/90 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-slate-700 shadow-sm backdrop-blur-md animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+              <span>
+                Viewing <strong className="font-semibold">Demo Library</strong>. Bookmarks saved will be temporary until claimed.
+              </span>
+            </div>
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 rounded-xl font-medium text-xs transition-all shadow-sm shrink-0 cursor-pointer"
+            >
+              <LogIn className="w-3 h-3" />
+              <span>Sign In with Google</span>
+            </button>
+          </div>
+        )}
 
         {/* Add Bookmark Section */}
         <AddBookmark

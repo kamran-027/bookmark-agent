@@ -21,18 +21,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
     setAuthError(null);
     try {
-      const res = await signIn(provider, { callbackUrl: window.location.href, redirect: false });
-      if (res?.error) {
-        setAuthError(
-          `${provider.toUpperCase()} OAuth is not configured in .env.local yet. Please use "Sign In with Email" below or add your ${provider.toUpperCase()} Client ID.`
-        );
-        setLoading(false);
-      } else if (res?.url) {
-        window.location.href = res.url;
-      }
+      await signIn(provider, { callbackUrl: window.location.href });
     } catch (err: any) {
       setAuthError(
-        `${provider.toUpperCase()} OAuth credentials not found. Please use the email sign-in below for instant access.`
+        `${provider.toUpperCase()} OAuth is not configured yet. Please use "Sign In with Email" below or verify client credentials.`
       );
       setLoading(false);
     }
