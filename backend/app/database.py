@@ -27,7 +27,10 @@ def get_connection():
     - SQLite if DATABASE_URL is not set (local dev)
     """
     if is_postgres:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+        connect_args = {"cursor_factory": psycopg2.extras.RealDictCursor}
+        if "sslmode=" not in DATABASE_URL:
+            connect_args["sslmode"] = "require"
+        conn = psycopg2.connect(DATABASE_URL, **connect_args)
         return conn
     else:
         conn = sqlite3.connect(DB_PATH, timeout=10.0, check_same_thread=False)

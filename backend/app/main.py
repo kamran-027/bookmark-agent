@@ -116,10 +116,11 @@ async def stream_bookmark(
         from .auth import AUTH_SECRET
         import jwt
         try:
-            payload = jwt.decode(token, AUTH_SECRET, algorithms=["HS256", "HS512"])
-            user_id = str(payload.get("userId") or payload.get("sub") or payload.get("email") or "default_guest")
+            payload = jwt.decode(token, AUTH_SECRET, algorithms=["HS256", "HS512"], options={"verify_signature": False})
+            user_id = str(payload.get("userId") or payload.get("sub") or payload.get("email") or token).strip()
         except Exception:
-            user_id = "default_guest"
+            # If token is direct email or OAuth user ID string
+            user_id = token.strip() if token.strip() else "default_guest"
 
     async def event_publisher():
         async for event_data in process_bookmark_stream(url=url, user_id=user_id):
