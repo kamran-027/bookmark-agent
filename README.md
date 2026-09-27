@@ -2,15 +2,15 @@
 
 <div align="center">
 
-**A full-stack, autonomous web curation platform that ingests, summarizes, categorizes, and searches web content in real-time.**
+**A full-stack, autonomous web curation platform that ingests, converts to Markdown, synthesizes with Gemini AI, and organizes web content in real-time.**
 
-Built with **Next.js 15**, **FastAPI**, **LangGraph**, **Gemini 3.5 Flash**, **Server-Sent Events (SSE)**, and **SQLite**.
+Built with **Next.js 15**, **FastAPI**, **Gemini Flash**, **Supabase PostgreSQL**, **Jina Reader**, **NextAuth OAuth**, and **Server-Sent Events (SSE)**.
 
+[![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![LangChain](https://img.shields.io/badge/LangGraph-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain.com/)
-[![Gemini](https://img.shields.io/badge/Gemini_3.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![SQLite](https://img.shields.io/badge/SQLite_3-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Gemini](https://img.shields.io/badge/Gemini_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
 </div>
 
@@ -18,11 +18,13 @@ Built with **Next.js 15**, **FastAPI**, **LangGraph**, **Gemini 3.5 Flash**, **S
 
 ## 🌟 Key Features
 
-* **⚡ Real-Time SSE Agent Streaming**: When you paste a URL, the Next.js UI connects to FastAPI via Server-Sent Events (`EventSource`), streaming the agent's internal progress live step-by-step (*Connecting* ➔ *Extracting HTML* ➔ *Gemini Synthesis* ➔ *Database Commit*).
-* **🧠 Structured AI Synthesis**: Uses Gemini 3.5 Flash with **Pydantic v2 schemas** (`BookmarkSchema`) to enforce strict type-safe outputs (page title, 2–3 sentence summary, category tags, and keywords).
-* **📚 Reader View & Inline Expand**: View full, un-truncated summaries via an inline toggle or open the focused **Reader View Modal** with one-click copy buttons.
+* **⚡ Real-Time SSE Agent Streaming**: When you paste a URL, the Next.js UI connects to FastAPI via Server-Sent Events (`EventSource`), streaming the agent's internal progress live step-by-step (*Connecting* ➔ *Markdown Extraction* ➔ *Gemini Synthesis* ➔ *Supabase Commit*).
+* **📑 Markdown-First Web Extraction**: Scrapes web pages directly into clean, structured Markdown using **Jina Reader** (`r.jina.ai`). Automatically renders dynamic JavaScript (SPAs like React/Vue), strips navigation bars, ads, and cookie banners, preserving headings, code snippets, and lists.
+* **🧠 Structured AI Synthesis**: Uses Gemini Flash with **Pydantic v2 schemas** (`BookmarkSchema`) to enforce strict type-safe outputs (page title, concise 2–3 sentence summary, category tags, and keywords).
+* **🔐 Multi-User OAuth & Private Libraries**: Integrated with NextAuth for seamless **Google** and **GitHub** OAuth authentication. Every user gets a private, user-isolated bookmark collection stored securely in Supabase.
+* **☁️ Supabase PostgreSQL Cloud Persistence**: Fully backed by Supabase with connection pooling (Supavisor) and automatic relational schema initialization (with SQLite fallback for offline local dev).
+* **📚 Reader View & Inline Expand**: View full summaries via an inline toggle or open the focused **Reader View Modal** with one-click copy buttons.
 * **🔍 Instant Search & Categorization**: Filter by category pills (`AI`, `Dev`, `Design`, `Finance`, `Productivity`, `News`) or search across titles, summaries, and tags in real time.
-* **💾 Local SQLite Persistence**: Stores all records inside an embedded `bookmarks.db` database with zero external server dependencies.
 * **🎨 Aceternity-Inspired Minimal UI**: Modern light slate palette with ambient lighting orbs, radial grid masks, favicon integration, and category-colored hairline card accents.
 
 ---
@@ -32,29 +34,34 @@ Built with **Next.js 15**, **FastAPI**, **LangGraph**, **Gemini 3.5 Flash**, **S
 ```
                                   USER (Browser)
                                         │
-                                        ▼
-                   ┌─────────────────────────────────────────┐
-                   │       Next.js 15 (Frontend Dashboard)   │
-                   │  • EventSource SSE Consumer  • Tailwind │
-                   └────────────────────┬────────────────────┘
+                         ┌──────────────┴──────────────┐
+                         ▼                             ▼
+              NextAuth SSO (Google/GitHub)     Next.js 15 (Frontend Dashboard)
+              • JWT Session Management         • EventSource SSE Consumer
+                         │                     • Real-time Library Views
+                         └──────────────┬──────────────┘
                                         │
                              HTTP REST / SSE Stream
+                           (Bearer User Auth Header)
                                         │
                                         ▼
-                   ┌─────────────────────────────────────────┐
-                   │         FastAPI (Backend Server)        │
-                   │  • Async Routes  • CORS  • sse-starlette│
-                   └────────────────────┬────────────────────┘
-                                        │
-                        ┌───────────────┴───────────────┐
-                        │                               │
-                        ▼                               ▼
-      ┌──────────────────────────────────┐    ┌──────────────────┐
-      │     LangGraph & Gemini Engine    │    │  SQLite Database │
-      │  • httpx (Web Scraper)           │    │  • bookmarks.db  │
-      │  • BeautifulSoup (HTML Stripper) │    │  • CRUD layer    │
-      │  • Pydantic Structured Output    │    └──────────────────┘
-      └──────────────────────────────────┘
+                    ┌─────────────────────────────────────────┐
+                    │         FastAPI (Backend Server)        │
+                    │  • User-Scoped Dependency Injection     │
+                    │  • Async Routes & CORS Handling         │
+                    │  • sse-starlette Streaming Pipeline     │
+                    └────────────────────┬────────────────────┘
+                                         │
+                         ┌───────────────┴───────────────┐
+                         │                               │
+                         ▼                               ▼
+       ┌──────────────────────────────────┐    ┌───────────────────────────────┐
+       │      Agent Ingestion Engine      │    │       Supabase Cloud DB       │
+       │  • Jina Reader (Markdown API)    │    │  • PostgreSQL (Port 6543)     │
+       │  • BeautifulSoup (Local Fallback)│    │  • Scoped by user_id          │
+       │  • Gemini Flash Synthesis        │    │  • Tables: users, bookmarks   │
+       │  • Pydantic Structured Output    │    │  • SQLite bookmarks.db (dev)  │
+       └──────────────────────────────────┘    └───────────────────────────────┘
 ```
 
 ---
@@ -66,25 +73,26 @@ bookmark-agent/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py             # FastAPI REST & SSE stream endpoints
-│   │   ├── agent.py            # LangGraph / Gemini 3.5 Flash engine
-│   │   ├── database.py         # SQLite CRUD layer
-│   │   └── schemas.py          # Pydantic schema models
-│   ├── bookmarks.db            # Auto-generated SQLite Database
+│   │   ├── agent.py            # Markdown scraper & Gemini synthesis engine
+│   │   ├── database.py         # Dual-mode DB layer (Supabase PostgreSQL / SQLite)
+│   │   ├── auth.py             # NextAuth JWT & Bearer user verification
+│   │   └── schemas.py          # Pydantic schema models (BookmarkSchema)
 │   ├── requirements.txt        # Python dependencies
-│   └── .env                    # Secrets (GEMINI_API_KEY)
+│   └── .env                    # Secrets (DATABASE_URL, GEMINI_API_KEY, AUTH_SECRET)
 │
 ├── frontend/                   # Next.js 15 App Router
 │   ├── app/
-│   │   ├── page.tsx            # Main Dashboard
-│   │   ├── layout.tsx          # App Shell & Metadata
+│   │   ├── page.tsx            # Main Dashboard & bookmark state
+│   │   ├── layout.tsx          # App Shell & AuthProvider wrapper
 │   │   ├── globals.css         # Theme, grid masks & depth styles
-│   │   ├── icon.svg            # Custom SVG Favicon
+│   │   ├── api/auth/[...nextauth]/route.ts # NextAuth OAuth handlers (Google, GitHub)
 │   │   └── components/
-│   │       ├── Navbar.tsx      # Sticky Glass Header & Counter
+│   │       ├── Navbar.tsx      # Sticky Glass Header & User Profile
 │   │       ├── AddBookmark.tsx # Command Bar & Live SSE Timeline
 │   │       ├── SearchBar.tsx   # Search input & Category pills
 │   │       ├── BookmarkCard.tsx# Grid Card with Favicon & Expand
-│   │       └── BookmarkModal.tsx# Reader View Popup Dialog
+│   │       ├── BookmarkModal.tsx# Reader View Popup Dialog
+│   │       └── LoginModal.tsx  # OAuth Sign-In Modal
 │   └── package.json
 │
 ├── .gitignore
@@ -99,19 +107,47 @@ bookmark-agent/
 * **Node.js** 18+ & **npm**
 * **Python** 3.9+
 * **Gemini API Key** from [Google AI Studio](https://aistudio.google.com/) *(Free)*
+* **Supabase Project** *(Free)*
 
 ---
 
-### Step 1: Configure Environment
+### Step 1: Configure Backend Environment
 
-Create `backend/.env` and add your API key:
-```bash
-echo "GEMINI_API_KEY=your_actual_key_here" > backend/.env
+Create or edit `backend/.env`:
+```env
+# 1. Google Gemini AI API Key
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# 2. Supabase PostgreSQL Connection String (Transaction Pooler - Port 6543)
+DATABASE_URL="postgresql://postgres.[PROJECT-REF]:[YOUR-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require"
+
+# 3. NextAuth JWT Shared Secret
+AUTH_SECRET=your_super_secret_jwt_key_here
+```
+
+> [!TIP]
+> If your Supabase password contains special characters like `@`, URL-encode it (e.g. `@` becomes `%40`).
+
+---
+
+### Step 2: Configure Frontend Environment
+
+Create `frontend/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_super_secret_jwt_key_here
+
+# Optional: OAuth Providers (Google & GitHub)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_ID=
+GITHUB_SECRET=
 ```
 
 ---
 
-### Step 2: Start the FastAPI Backend (Terminal 1)
+### Step 3: Start the FastAPI Backend (Terminal 1)
 
 ```bash
 cd backend
@@ -125,7 +161,7 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-### Step 3: Start the Next.js Frontend (Terminal 2)
+### Step 4: Start the Next.js Frontend (Terminal 2)
 
 ```bash
 cd frontend
@@ -140,10 +176,11 @@ npm run dev
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/bookmarks` | Fetch all bookmarks (supports `?category=AI` query filter) |
-| `GET` | `/api/bookmarks/search?q={query}` | Full-text search across titles, summaries, and tags |
-| `DELETE`| `/api/bookmarks/{id}` | Delete a bookmark by ID |
-| `GET` | `/api/bookmarks/stream?url={url}` | **SSE EventStream**: Emits real-time progress steps and returns the saved bookmark object |
+| `GET` | `/api/bookmarks` | Fetch bookmarks for the authenticated user (supports `?category=AI`) |
+| `GET` | `/api/bookmarks/search?q={query}` | Keyword search across user's titles, summaries, and tags |
+| `DELETE`| `/api/bookmarks/{id}` | Delete a user bookmark by ID |
+| `GET` | `/api/bookmarks/stream?url={url}&token={token}` | **SSE EventStream**: Ingests URL in Markdown, synthesizes via Gemini, and saves to user's Supabase storage |
+| `GET` | `/api/user/sync` | Syncs/upserts authenticated OAuth user record into Supabase |
 
 ---
 
@@ -151,16 +188,16 @@ npm run dev
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Frontend** | Next.js 15, React, Tailwind CSS | High-fidelity dashboard interface |
-| **Icons** | Lucide React | Clean, scalable vector iconography |
-| **Backend** | FastAPI, Uvicorn, sse-starlette | Async REST & Server-Sent Events API |
-| **Agent / LLM** | LangGraph, Gemini 3.5 Flash | Autonomous reasoning, scraping, & synthesis |
-| **Scraping** | `httpx`, `BeautifulSoup4` | Fast async HTTP client & HTML parsing |
-| **Database** | SQLite 3 (`bookmarks.db`) | Embedded, zero-configuration local database |
-| **Validation** | Pydantic v2 | Strict type enforcement for AI output |
+| **Frontend** | Next.js 15, React, Tailwind CSS | Modern light slate dashboard interface |
+| **Authentication** | NextAuth.js | Google & GitHub OAuth SSO + Demo Account |
+| **Backend** | FastAPI, Uvicorn, sse-starlette | High-performance async REST & SSE streaming API |
+| **Database** | Supabase (PostgreSQL 15) | User-isolated persistent cloud storage with Supavisor pooling |
+| **Scraping** | Jina Reader (`r.jina.ai`) + `httpx` | Markdown-first extraction with dynamic JavaScript & SPA support |
+| **AI Synthesis** | Google Gemini Flash | High-speed structured summarization via Pydantic schemas |
+| **Validation** | Pydantic v2 | Strict type safety for agent outputs |
 
 ---
 
 <div align="center">
-Built as part of the <b>Cadence Labs</b> AI Agent Mastery Series.
+Built as part of the <b>Cadence Labs</b> AI Agent & Full-Stack Architecture Series.
 </div>

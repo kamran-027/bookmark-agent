@@ -35,7 +35,7 @@ def get_summarizer_llm():
     if not api_key or not api_key.strip():
         raise ValueError("GEMINI_API_KEY is not set in backend/.env. Please add your Gemini API Key.")
     
-    gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     return ChatGoogleGenerativeAI(
         model=gemini_model,
         temperature=0.3,
