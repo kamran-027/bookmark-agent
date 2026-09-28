@@ -19,22 +19,16 @@ export const Navbar: React.FC<NavbarProps> = ({ totalCount }) => {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/70 px-4 sm:px-6 py-3 shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
           {/* Brand */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 text-white flex items-center justify-center shadow-md shadow-slate-900/10 border border-slate-700/40 shrink-0">
               <Bookmark className="w-4 h-4 text-indigo-300" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm font-bold text-slate-900 tracking-tight truncate">
-                  Recall
-                </h1>
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-50/80 text-emerald-700 border border-emerald-200/70 px-1.5 sm:px-2 py-0.5 rounded-full shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-sm shadow-emerald-500" />
-                  Cloud Sync
-                </span>
-              </div>
+              <h1 className="text-sm font-bold text-slate-900 tracking-tight truncate">
+                Recall
+              </h1>
               <p className="text-[10px] sm:text-[11px] text-slate-500 font-normal hidden xs:block sm:block truncate">
                 Autonomous AI Knowledge Engine
               </p>

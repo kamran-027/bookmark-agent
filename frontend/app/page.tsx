@@ -137,22 +137,19 @@ export default function Home() {
       <Navbar totalCount={bookmarks.length} />
 
       {/* Main Container */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Backend Offline Alert */}
         {backendError && (
-          <div className="mb-6 sm:mb-8 p-3.5 sm:p-4 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-800 shadow-sm backdrop-blur-md">
-            <div className="flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-amber-900">Backend Server Offline</p>
-                <p className="text-amber-700 mt-0.5">
-                  Could not reach API server. Please ensure backend is running.
-                </p>
-              </div>
+          <div className="mb-6 p-3 sm:p-3.5 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3 text-xs text-amber-800 shadow-sm backdrop-blur-md">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>Backend Server Offline:</strong> Run <code className="bg-amber-100/80 px-1.5 py-0.5 rounded text-[11px] font-mono text-amber-900 font-semibold">uvicorn app.main:app --port 8000</code> to connect.
+              </span>
             </div>
             <button
               onClick={fetchBookmarks}
-              className="inline-flex items-center gap-1 bg-white border border-amber-300 px-3 py-1.5 rounded-lg text-amber-900 hover:bg-amber-100 font-medium transition-colors cursor-pointer shrink-0 shadow-sm"
+              className="inline-flex items-center gap-1 bg-white border border-amber-300 px-2.5 py-1 rounded-xl text-amber-900 hover:bg-amber-100 font-medium transition-colors cursor-pointer shrink-0 shadow-sm text-[11px]"
             >
               <RefreshCw className="w-3 h-3" />
               <span>Retry</span>
@@ -160,93 +157,53 @@ export default function Home() {
           </div>
         )}
 
-        {/* Hero Section */}
-        <div className="mb-8 sm:mb-10 text-center max-w-xl mx-auto px-2">
-          <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-medium bg-white/80 border border-slate-200/90 text-slate-700 px-2.5 sm:px-3 py-1 rounded-full shadow-sm mb-2.5 sm:mb-3">
-            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
-            <span>Autonomous Web Curation & Persistent Knowledge</span>
+        {/* Cohesive Hero Section */}
+        <div className="mb-6 sm:mb-8 text-center max-w-xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-medium bg-white/80 border border-slate-200/80 text-slate-600 px-3 py-1 rounded-full shadow-sm mb-2.5 backdrop-blur-sm">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+            <span>Autonomous AI with Persistent Memory</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2 sm:mb-2.5">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mb-1.5">
             Your AI Knowledge Base
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-            Paste any link. The AI agent extracts, synthesizes, and catalogs it automatically with user-scoped cloud persistence.
+          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-normal">
+            Paste any link to extract clean Markdown, synthesize key insights, and save to your private collection.
           </p>
-
-          {/* Architecture Highlights Strip */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 mt-3 sm:mt-4 text-[10px] sm:text-[11px] text-slate-500 font-medium">
-            <span className="flex items-center gap-1">
-              <Radio className="w-3 h-3 text-indigo-500 shrink-0" /> SSE Live Streaming
-            </span>
-            <span className="hidden xs:inline">•</span>
-            <span className="flex items-center gap-1">
-              <Cpu className="w-3 h-3 text-purple-500 shrink-0" /> Gemini AI Engine
-            </span>
-            <span className="hidden xs:inline">•</span>
-            <span className="flex items-center gap-1">
-              <Database className="w-3 h-3 text-emerald-500 shrink-0" /> Cloud PostgreSQL
-            </span>
-            <span className="hidden xs:inline">•</span>
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-blue-500 shrink-0" /> SSO Auth
-            </span>
-          </div>
         </div>
 
-        {/* User Scope / Library State Notification Banner */}
-        {isAuthenticated ? (
-          <div className="mb-6 p-3 sm:p-3.5 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-emerald-900 shadow-sm backdrop-blur-md animate-in fade-in duration-200">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-              <span>
-                Personal Library Active: <strong className="font-semibold">{session?.user?.email || session?.user?.name}</strong>
-              </span>
-              <span className="hidden sm:inline text-emerald-600/70 font-mono">• Supabase Cloud Storage</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] bg-emerald-100/90 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">
-                Private Bookmarks
-              </span>
-              <button
-                onClick={() => signOut({ callbackUrl: window.location.href })}
-                className="text-emerald-700 hover:text-emerald-900 font-medium underline underline-offset-2 ml-1 cursor-pointer"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6 p-3 sm:p-3.5 bg-slate-100/90 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs text-slate-700 shadow-sm backdrop-blur-md animate-in fade-in duration-200">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-              <span>
-                Viewing <strong className="font-semibold">Demo Library</strong>. Bookmarks saved will be temporary until claimed.
-              </span>
-            </div>
-            <button
-              onClick={() => setShowLoginModal(true)}
-              className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 rounded-xl font-medium text-xs transition-all shadow-sm shrink-0 cursor-pointer"
-            >
-              <LogIn className="w-3 h-3" />
-              <span>Sign In with Google</span>
-            </button>
-          </div>
-        )}
-
-        {/* Add Bookmark Section */}
+        {/* Add Bookmark Command Bar */}
         <AddBookmark
           onBookmarkAdded={fetchBookmarks}
           onRequireAuth={() => setShowLoginModal(true)}
         />
 
-        {/* Search & Filter Toolbar */}
-        <SearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-        />
+        {/* Library Section Header */}
+        <div className="mt-8 mb-4">
+          <div className="flex items-center justify-between mb-3 px-0.5">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                {selectedCategory === "All" ? "Saved Knowledge" : `${selectedCategory} Collection`}
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {isAuthenticated
+                  ? session?.user?.email || session?.user?.name || "Your personal library"
+                  : "Sign in with Google to create your private collection"}
+              </p>
+            </div>
+            <span className="text-xs text-slate-400 font-mono font-medium">
+              {bookmarks.length} {bookmarks.length === 1 ? "entry" : "entries"}
+            </span>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+        </div>
 
         {/* Bookmarks Grid / Empty State */}
         {loading ? (
@@ -255,31 +212,15 @@ export default function Home() {
             <p className="text-xs font-medium">Retrieving saved knowledge...</p>
           </div>
         ) : bookmarks.length > 0 ? (
-          <div>
-            <div className="flex items-center justify-between mb-3.5 sm:mb-4 px-1">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                {selectedCategory === "All" ? "Knowledge Collection" : `${selectedCategory} Collection`}
-                {!isAuthenticated && (
-                  <span className="text-[10px] bg-slate-100 text-slate-500 font-medium px-2 py-0.5 rounded-full lowercase">
-                    demo preview
-                  </span>
-                )}
-              </span>
-              <span className="text-xs text-slate-400 font-mono">
-                {bookmarks.length} {bookmarks.length === 1 ? "entry" : "entries"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-              {bookmarks.map((bookmark) => (
-                <BookmarkCard
-                  key={bookmark.id}
-                  bookmark={bookmark}
-                  onDelete={handleDelete}
-                  onSelect={(b) => setSelectedBookmark(b)}
-                />
-              ))}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            {bookmarks.map((bookmark) => (
+              <BookmarkCard
+                key={bookmark.id}
+                bookmark={bookmark}
+                onDelete={handleDelete}
+                onSelect={(b) => setSelectedBookmark(b)}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-center py-12 sm:py-16 bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">

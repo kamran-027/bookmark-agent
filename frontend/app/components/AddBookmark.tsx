@@ -84,7 +84,7 @@ export const AddBookmark: React.FC<AddBookmarkProps> = ({ onBookmarkAdded, onReq
   };
 
   return (
-    <div className="mb-6 sm:mb-8 max-w-2xl mx-auto">
+    <div className="mb-6 sm:mb-8 w-full">
       <div className="bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all">
         {/* Input Bar */}
         <form
