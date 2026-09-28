@@ -125,7 +125,7 @@ async def process_bookmark_stream(url: str, user_id: str = "default_guest") -> A
         )
         result: BookmarkSchema = await asyncio.to_thread(llm.invoke, prompt)
 
-        yield json.dumps({"event": "status", "data": "Saving bookmark to Supabase database..."})
+        yield json.dumps({"event": "status", "data": "Persisting bookmark into memory..."})
         await asyncio.sleep(0.2)
 
         # Step 4: Save to user-scoped database
